@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -65,24 +64,50 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// Defines a stateless widget for the details page
 class DetailsPage extends StatelessWidget {
+
+    // Declares a final map to hold the cocktail data
   final Map<String, dynamic> cocktail;
 
+  // Define a constructor for the DetailsPage widget
   DetailsPage({required this.cocktail, Key? key}) : super(key: key);
 
+  // Override the build method to describe the part of the user interface represented by this widget
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+      // Set the title of the app bar to the name of the cocktail
         title: Text(cocktail['strDrink']),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
+          // Align the children to the start of the column
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            // Displays the ingredients of the cocktail
+            Text('Ingredients:', style: TextStyle(fontSize: 24)),
+            for (var i = 1; i <= 15; i++)
+              if (cocktail['strIngredient$i'] != null && cocktail['strIngredient$i'].isNotEmpty)
+                Text('${cocktail['strIngredient$i']} - ${cocktail['strMeasure$i']}'),
+            SizedBox(height: 20),
+            // Displays the instructions of the cocktail
             Text('Instructions:', style: TextStyle(fontSize: 24)),
             Text(cocktail['strInstructions']),
+            SizedBox(height: 20),
+            // Displays the category of the cocktail
+            Text('Category:', style: TextStyle(fontSize: 24)),
+            Text(cocktail['strCategory']),
+            SizedBox(height: 20),
+            // Displays whether the cocktail is alcoholic or not 
+            Text('Alcoholic:', style: TextStyle(fontSize: 24)),
+            Text(cocktail['strAlcoholic']),
+            SizedBox(height: 20),
+            // Displays the type of glass the cocktail is served in
+            Text('Glass:', style: TextStyle(fontSize: 24)),
+            Text(cocktail['strGlass']),
           ],
         ),
       ),

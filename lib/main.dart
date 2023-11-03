@@ -92,25 +92,25 @@ class DetailsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           // Define the children of the column
           children: <Widget>[
-            // Display the ingredients of the cocktail
+            // Displays the ingredients of the cocktail
             Text('Ingredients:', style: TextStyle(fontSize: 24)),
             for (var i = 1; i <= 15; i++)
               if (cocktail['strIngredient$i'] != null && cocktail['strIngredient$i'].isNotEmpty)
                 Text('${cocktail['strIngredient$i']} - ${cocktail['strMeasure$i']}'),
             SizedBox(height: 20),
-            // Display the instructions of the cocktail
+            // Displays the instructions of the cocktail
             Text('Instructions:', style: TextStyle(fontSize: 24)),
             Text(cocktail['strInstructions']),
             SizedBox(height: 20),
-            // Display the category of the cocktail
+            // Displays the category of the cocktail
             Text('Category:', style: TextStyle(fontSize: 24)),
             Text(cocktail['strCategory']),
             SizedBox(height: 20),
-            // Display whether the cocktail is alcoholic
+            // Displays whether the cocktail is alcoholic
             Text('Alcoholic:', style: TextStyle(fontSize: 24)),
             Text(cocktail['strAlcoholic']),
             SizedBox(height: 20),
-            // Display the type of glass the cocktail is served in
+            // Displays the type of glass the cocktail is served in
             Text('Glass:', style: TextStyle(fontSize: 24)),
             Text(cocktail['strGlass']),
           ],

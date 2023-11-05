@@ -91,9 +91,7 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Cocktail Explorer'),
-      ),
+
       body: Column(
         children: <Widget>[
           Padding(

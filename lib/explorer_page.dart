@@ -3,25 +3,21 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'details_page.dart';
 
-// The main widget for the cocktail explorer
 class CocktailExplorer extends StatefulWidget {
   @override
   _CocktailExplorerState createState() => _CocktailExplorerState();
 }
 
 class _CocktailExplorerState extends State<CocktailExplorer> {
-  // List to store the ingredients entered by the user
   final List<String> _ingredients = [];
-  // List to store the cocktails fetched from the API
   final List<Map<String, dynamic>> _cocktails = [];
-  // Controller for the text field
   final TextEditingController _controller = TextEditingController();
-  // Boolean to track if a fetch operation is ongoing
   bool _isLoading = false;
 
-  // Function to fetch the details of a single cocktail
   Future<Map<String, dynamic>> fetchCocktailDetails(String id) async {
-    final response = await http.get(Uri.parse('https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=$id'));
+    final response = await http.get(
+      Uri.parse('https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=$id'),
+    );
     if (response.statusCode == 200) {
       final responseBody = json.decode(response.body);
       return responseBody['drinks'].first as Map<String, dynamic>;
@@ -30,75 +26,68 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
     }
   }
 
-  // Function to fetch cocktails based on the ingredients entered by the user
   Future<void> fetchCocktails() async {
-    if (_isLoading) return; // Prevent duplicate fetches
+    if (_isLoading) return;
 
-    if (!mounted) return; // Check if the State object is still in the tree
     setState(() {
       _isLoading = true;
     });
 
     _cocktails.clear();
     try {
-      final ingredientQuery = _ingredients.join(',');
-      final response = await http.get(
-        Uri.parse('https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=$ingredientQuery'),
-      );
-
-      if (response.statusCode == 200) {
-        final responseBody = json.decode(response.body);
-        final List<dynamic>? drinksList = responseBody['drinks'];
-
-        if (drinksList == null) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No cocktails found for the provided ingredients.')),
-          );
-          return;
-        }
-
-        for (var drink in drinksList) {
-          try {
-            var detailedCocktail = await fetchCocktailDetails(drink['idDrink']);
-            if (!mounted) return;
-            setState(() {
-              _cocktails.add(detailedCocktail);
-            });
-          } catch (e) {
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to load details for cocktail: ${drink['strDrink']}')),
-            );
-          }
-        }
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch cocktails: ${response.statusCode}')),
+      for (String ingredient in _ingredients) {
+        final response = await http.get(
+          Uri.parse('https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=$ingredient'),
         );
+
+        if (response.statusCode == 200) {
+          final responseBody = json.decode(response.body);
+          final List<dynamic>? drinksList = responseBody['drinks'];
+
+          if (drinksList == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('No cocktails found with "$ingredient".')),
+            );
+            continue; // Skip to the next ingredient if no drinks found
+          }
+
+          for (var drink in drinksList) {
+            try {
+              var detailedCocktail = await fetchCocktailDetails(drink['idDrink']);
+              setState(() {
+                _cocktails.add(detailedCocktail);
+              });
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to load details for cocktail: ${drink['strDrink']}')),
+              );
+            }
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to fetch cocktails with the ingredient "$ingredient": ${response.statusCode}')),
+          );
+        }
       }
     } catch (e) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  // Ensure to dispose the TextEditingController when the State is disposed
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
-  // The build method for the widget
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,12 +130,10 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
           ),
           ElevatedButton(
             child: Text('Find Cocktails'),
-            onPressed: _ingredients.isEmpty ? null : fetchCocktails
+            onPressed: _ingredients.isEmpty ? null : fetchCocktails,
           ),
-          // Show a loading indicator if a fetch operation is ongoing
           if (_isLoading)
             CircularProgressIndicator(),
-          // Display the fetched cocktails in a list
           Expanded(
             child: ListView.builder(
               itemCount: _cocktails.length,

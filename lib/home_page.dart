@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'details_page.dart'; // Imports the details page
+import 'explorer_page.dart'; // Imports the CocktailExplorer page
 
 class HomePage extends StatefulWidget {
   @override
@@ -45,6 +46,16 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
               ),
+            ElevatedButton(
+              child: Text('Cocktail Explorer'),
+              onPressed: () {
+                // Navigate to the CocktailExplorer page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CocktailExplorer()),
+                );
+              },
+            ),
           ],
         ),
       ),

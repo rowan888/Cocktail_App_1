@@ -17,14 +17,14 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Random Cocktail'),
+        title: Text('Cocktail Explorer '),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton(
-              child: Text('Generate'),
+              child: Text('Generate Random'),
               onPressed: () async {
                 await fetchCocktail(); // Fetches a random cocktail
                 if (cocktail != null) {
@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
             ElevatedButton(
-              child: Text('Cocktail Explorer'),
+              child: Text('Explorer'),
               onPressed: () {
                 // Navigate to the CocktailExplorer page
                 Navigator.push(

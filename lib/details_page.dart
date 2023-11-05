@@ -9,68 +9,78 @@ class DetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Detailed debugging: print each key and value
-    cocktail.forEach((key, value) {
-      print('$key: $value');
-    });
-
-    // Function to build a text widget if the key exists and is not empty
+    // Function to build a text section if the key exists and is not empty
     Widget buildTextSection(String title, String? value) {
-      if (value != null && value.isNotEmpty) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: TextStyle(fontSize: 24)),
-            Text(value),
-            SizedBox(height: 20),
-          ],
-        );
-      } else {
-        return SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8.0), // Space between sections
+        child: value != null && value.isNotEmpty
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.headline6),
+                  SizedBox(height: 4), // Small gap between title and content
+                  Text(value, style: Theme.of(context).textTheme.bodyText2),
+                ],
+              )
+            : SizedBox.shrink(),
+      );
+    }
+
+    // Generate ingredient list
+    Widget buildIngredientList() {
+      List<Widget> ingredientsWidgets = [];
+      for (int i = 1; i <= 15; i++) {
+        var ingredient = cocktail['strIngredient$i'];
+        var measure = cocktail['strMeasure$i'];
+        if (ingredient != null && ingredient.isNotEmpty) {
+          ingredientsWidgets.add(
+            Text('$ingredient: ${measure ?? 'Not specified'}'),
+          );
+        }
       }
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: ingredientsWidgets);
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(cocktail['strDrink'] ?? 'Cocktail'),
+        title: Text(cocktail['strDrink'] ?? 'Cocktail Details'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (cocktail['strDrinkThumb'] != null)
-              Center(
-                child: Image.network(
-                  cocktail['strDrinkThumb'],
-                  errorBuilder: (context, error, stackTrace) {
-                    // Handle image loading errors
-                    return const Icon(Icons.broken_image); // or some placeholder image
-                  },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              if (cocktail['strDrinkThumb'] != null)
+                Center(
+                  child: Image.network(
+                    cocktail['strDrinkThumb'],
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.broken_image); // Placeholder image on error
+                    },
+                  ),
                 ),
-              ),
-            const SizedBox(height: 20),
-            // Generate ingredient list
-            const Text('Ingredients:', style: TextStyle(fontSize: 24)),
-            ...List.generate(15, (i) => i + 1).map(
-              (i) {
-                var ingredient = cocktail['strIngredient$i'];
-                var measure = cocktail['strMeasure$i'];
-                if (ingredient != null && ingredient.isNotEmpty) {
-                  return Text('$ingredient: ${measure ?? 'Not specified'}');
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-            // Instructions section
-            buildTextSection('Instructions', cocktail['strInstructions']),
-            // Category section
-            buildTextSection('Category', cocktail['strCategory']),
-            // Alcoholic content section
-            buildTextSection('Alcoholic', cocktail['strAlcoholic']),
-            // Glass type section
-            buildTextSection('Glass', cocktail['strGlass']),
-          ],
+              SizedBox(height: 24), // Added space between image and ingredients
+
+              // Ingredient list
+              Text('Ingredients:', style: Theme.of(context).textTheme.headline6),
+              buildIngredientList(),
+
+              SizedBox(height: 24), // Space between sections
+
+              // Instructions section
+              buildTextSection('Instructions', cocktail['strInstructions']),
+
+              // Category section
+              buildTextSection('Category', cocktail['strCategory']),
+
+              // Alcoholic content section
+              buildTextSection('Alcoholic', cocktail['strAlcoholic']),
+
+              // Glass type section
+              buildTextSection('Glass', cocktail['strGlass']),
+            ],
+          ),
         ),
       ),
     );

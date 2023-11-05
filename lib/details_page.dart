@@ -45,7 +45,13 @@ class DetailsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(cocktail?['strDrink'] ?? 'Cocktail Details'),
+        backgroundColor: Colors.red, // Set the background color of the AppBar to red
+        title: Text(
+          cocktail?['strDrink'] ?? 'Cocktail Details',
+          style: TextStyle(
+            color: Colors.white, // Set the text color to white
+          ),
+        ),
       ),
       body: cocktail == null
           ? Center(child: Text('No data available'))

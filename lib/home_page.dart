@@ -21,9 +21,9 @@ class _HomePageState extends State<HomePage> {
       final Map<String, dynamic> newCocktail = json.decode(response.body)['drinks'][0];
       setState(() {
         cocktail = newCocktail;
-        showDetailsIndicator = true; // Enable the indicator when data is fetched
-        // Do not change _currentIndex here, just update the indicator
-        // Update the "Details" tab label with a badge
+        // Always set showDetailsIndicator to true to keep the badge visible
+        showDetailsIndicator = true;
+        // Update the "Details" tab label with a red badge
         navBarItems[1] = BottomNavigationBarItem(
           icon: Icon(Icons.details),
           label: 'Details${showDetailsIndicator ? '  ●' : ''}',
@@ -39,7 +39,8 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _currentIndex = index;
       if (_currentIndex == 1 && cocktail != null) { // Make sure there is a cocktail data to show
-        showDetailsIndicator = false; // Reset the indicator when navigating to details
+        // Reset the indicator when navigating to details
+        showDetailsIndicator = false;
         // Update the "Details" tab label without the badge
         navBarItems[1] = BottomNavigationBarItem(
           icon: Icon(Icons.details),
@@ -79,7 +80,34 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cocktail Explorer'),
+        backgroundColor: Colors.red, // Set the background color of the AppBar to warm red
+        title: Row(
+          children: [
+            Text(
+              'Cocktail Explorer',
+              style: TextStyle(
+                color: Colors.white, // Set the text color to white
+              ),
+            ),
+            SizedBox(width: 5),
+            // Display the badge if showDetailsIndicator is true
+            if (showDetailsIndicator)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  'New Cocktail!', 
+                  style: TextStyle(
+                    color: Colors.white, // Set badge text color to white
+                    fontSize: 12, // Adjust badge font size
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
       body: _currentIndex == 2
           ? CocktailExplorer()

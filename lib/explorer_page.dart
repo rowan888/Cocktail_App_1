@@ -4,8 +4,6 @@ import 'dart:convert';
 import 'details_page.dart';
 
 class CocktailExplorer extends StatefulWidget {
-  CocktailExplorer({Key? key}) : super(key: key);
-
   @override
   _CocktailExplorerState createState() => _CocktailExplorerState();
 }
@@ -16,26 +14,59 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
   final TextEditingController _controller = TextEditingController();
   bool _isLoading = false;
 
+  Future<Map<String, dynamic>> fetchCocktailDetails(String id) async {
+    final response = await http.get(Uri.parse('https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=$id'));
+    if (response.statusCode == 200) {
+      final responseBody = json.decode(response.body);
+      return responseBody['drinks'].first as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to load cocktail details');
+    }
+  }
+
   Future<void> fetchCocktails() async {
-    setState(() => _isLoading = true);
+    if (_isLoading) return; // Prevent duplicate fetches
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    _cocktails.clear();
     try {
-      _cocktails.clear();
-      // Assuming you want to find cocktails that can be made with all ingredients
-      String ingredients = _ingredients.join(',');
-      final response = await http.get(Uri.parse('https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=$ingredients'));
+      final ingredientQuery = _ingredients.join(',');
+      final response = await http.get(
+        Uri.parse('https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=$ingredientQuery'),
+      );
 
       if (response.statusCode == 200) {
-        final List<dynamic> newCocktails = json.decode(response.body)['drinks'] ?? [];
-        _cocktails.addAll(newCocktails.cast<Map<String, dynamic>>());
+        final responseBody = json.decode(response.body);
+        final List<dynamic> drinksList = responseBody['drinks'] ?? [];
+
+        for (var drink in drinksList) {
+          try {
+            var detailedCocktail = await fetchCocktailDetails(drink['idDrink']);
+            setState(() {
+              _cocktails.add(detailedCocktail);
+            });
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to load details for cocktail: ${drink['strDrink']}')),
+            );
+          }
+        }
       } else {
-        // Handle non-200 responses
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to fetch cocktails')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch cocktails: ${response.statusCode}')),
+        );
       }
     } catch (e) {
-      // Handle any errors
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
     } finally {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -54,23 +85,34 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
               decoration: InputDecoration(
                 labelText: 'Enter ingredient',
                 suffixIcon: IconButton(
-                  onPressed: () => _controller.clear(),
+                  onPressed: _controller.clear,
                   icon: Icon(Icons.clear),
                 ),
               ),
-              onSubmitted: (value) => addIngredient(value),
+              onSubmitted: (String value) {
+                if (value.isNotEmpty) {
+                  setState(() {
+                    _ingredients.add(value);
+                    _controller.clear();
+                  });
+                }
+              },
             ),
           ),
           Wrap(
-            spacing: 8.0,
             children: _ingredients.map((ingredient) => Chip(
               label: Text(ingredient),
-              onDeleted: () => removeIngredient(ingredient),
+              onDeleted: () {
+                setState(() {
+                  _ingredients.remove(ingredient);
+                });
+              },
             )).toList(),
+            spacing: 8.0,
           ),
           ElevatedButton(
             child: Text('Find Cocktails'),
-            onPressed: _ingredients.isNotEmpty ? fetchCocktails : null,
+            onPressed: _ingredients.isEmpty ? null : fetchCocktails,
           ),
           if (_isLoading)
             CircularProgressIndicator(),
@@ -85,7 +127,9 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => DetailsPage(cocktail: _cocktails[index])),
+                        MaterialPageRoute(
+                          builder: (context) => DetailsPage(cocktail: _cocktails[index]),
+                        ),
                       );
                     },
                   ),
@@ -96,20 +140,5 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
         ],
       ),
     );
-  }
-
-  void addIngredient(String ingredient) {
-    if (ingredient.isNotEmpty && !_ingredients.contains(ingredient)) {
-      setState(() {
-        _ingredients.add(ingredient);
-        _controller.clear();
-      });
-    }
-  }
-
-  void removeIngredient(String ingredient) {
-    setState(() {
-      _ingredients.remove(ingredient);
-    });
   }
 }

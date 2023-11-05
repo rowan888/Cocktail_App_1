@@ -9,45 +9,67 @@ class DetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Detailed debugging: print each key and value
+    cocktail.forEach((key, value) {
+      print('$key: $value');
+    });
+
+    // Function to build a text widget if the key exists and is not empty
+    Widget buildTextSection(String title, String? value) {
+      if (value != null && value.isNotEmpty) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: TextStyle(fontSize: 24)),
+            Text(value),
+            SizedBox(height: 20),
+          ],
+        );
+      } else {
+        return SizedBox.shrink();
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        // Sets the title to the cocktail name
-        title: Text(cocktail['strDrink']),
+        title: Text(cocktail['strDrink'] ?? 'Cocktail'),
       ),
-      body: Padding(
-        // Adds padding around the child widget
-        padding: EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          // Aligns the children to the start of the column
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            // Displays the ingredients
-            Text('Ingredients:', style: TextStyle(fontSize: 24)),
-            // Loops through the possible ingredients
-            for (var i = 1; i <= 15; i++)
-              // If the ingredient exists, it is displayed
-              if (cocktail['strIngredient$i'] != null && cocktail['strIngredient$i'].isNotEmpty)
-                Text('${cocktail['strIngredient$i']} - ${cocktail['strMeasure$i']}'),
-            // Adds vertical space
-            SizedBox(height: 20),
-            // Displays the instructions
-            Text('Instructions:', style: TextStyle(fontSize: 24)),
-            Text(cocktail['strInstructions']),
-            // Adds vertical space
-            SizedBox(height: 20),
-            // Displays the category
-            Text('Category:', style: TextStyle(fontSize: 24)),
-            Text(cocktail['strCategory']),
-            // Adds vertical space
-            SizedBox(height: 20),
-            // Displays whether the cocktail is alcoholic
-            Text('Alcoholic:', style: TextStyle(fontSize: 24)),
-            Text(cocktail['strAlcoholic']),
-            // Adds vertical space
-            SizedBox(height: 20),
-            // Displays the type of glass
-            Text('Glass:', style: TextStyle(fontSize: 24)),
-            Text(cocktail['strGlass']),
+          children: [
+            if (cocktail['strDrinkThumb'] != null)
+              Center(
+                child: Image.network(
+                  cocktail['strDrinkThumb'],
+                  errorBuilder: (context, error, stackTrace) {
+                    // Handle image loading errors
+                    return const Icon(Icons.broken_image); // or some placeholder image
+                  },
+                ),
+              ),
+            const SizedBox(height: 20),
+            // Generate ingredient list
+            const Text('Ingredients:', style: TextStyle(fontSize: 24)),
+            ...List.generate(15, (i) => i + 1).map(
+              (i) {
+                var ingredient = cocktail['strIngredient$i'];
+                var measure = cocktail['strMeasure$i'];
+                if (ingredient != null && ingredient.isNotEmpty) {
+                  return Text('$ingredient: ${measure ?? 'Not specified'}');
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            // Instructions section
+            buildTextSection('Instructions', cocktail['strInstructions']),
+            // Category section
+            buildTextSection('Category', cocktail['strCategory']),
+            // Alcoholic content section
+            buildTextSection('Alcoholic', cocktail['strAlcoholic']),
+            // Glass type section
+            buildTextSection('Glass', cocktail['strGlass']),
           ],
         ),
       ),

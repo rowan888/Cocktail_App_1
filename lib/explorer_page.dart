@@ -14,6 +14,9 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
   final TextEditingController _controller = TextEditingController();
   bool _isLoading = false;
 
+  // Define your theme color here
+  final Color themeColor = Colors.red;
+
   Future<Map<String, dynamic>> fetchCocktailDetails(String id) async {
     final response = await http.get(
       Uri.parse('https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=$id'),
@@ -48,7 +51,7 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('No cocktails found with "$ingredient".')),
             );
-            continue; // Skip to the next ingredient if no drinks found
+            continue;
           }
 
           for (var drink in drinksList) {
@@ -91,7 +94,6 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: Column(
         children: <Widget>[
           Padding(
@@ -102,9 +104,18 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
                 labelText: 'Enter ingredient',
                 suffixIcon: IconButton(
                   onPressed: _controller.clear,
-                  icon: Icon(Icons.clear),
+                  icon: Icon(Icons.clear, color: themeColor),
                 ),
+                border: OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: themeColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: themeColor),
+                ),
+                labelStyle: TextStyle(color: themeColor),
               ),
+              cursorColor: themeColor,
               onSubmitted: (String value) {
                 if (value.isNotEmpty) {
                   setState(() {
@@ -118,6 +129,7 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
           Wrap(
             children: _ingredients.map((ingredient) => Chip(
               label: Text(ingredient),
+              deleteIconColor: themeColor,
               onDeleted: () {
                 setState(() {
                   _ingredients.remove(ingredient);
@@ -128,18 +140,29 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
           ),
           ElevatedButton(
             child: Text('Find Cocktails'),
+            style: ElevatedButton.styleFrom(
+              primary: themeColor,
+              onPrimary: Colors.white,
+            ),
             onPressed: _ingredients.isEmpty ? null : fetchCocktails,
           ),
           if (_isLoading)
-            CircularProgressIndicator(),
-          Expanded(
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(themeColor),
+            ),
+                    Expanded(
             child: ListView.builder(
               itemCount: _cocktails.length,
               itemBuilder: (context, index) {
                 return ListTile(
                   title: Text(_cocktails[index]['strDrink']),
+                  subtitle: Text(_cocktails[index]['strCategory'] ?? 'Unknown category'),
                   trailing: ElevatedButton(
                     child: Text('View Details'),
+                    style: ElevatedButton.styleFrom(
+                      primary: themeColor, // Use the theme color here
+                      onPrimary: Colors.white,
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -158,3 +181,5 @@ class _CocktailExplorerState extends State<CocktailExplorer> {
     );
   }
 }
+
+            

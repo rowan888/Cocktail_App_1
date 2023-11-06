@@ -3,39 +3,71 @@ import 'package:flutter/material.dart';
 class HelpPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Help', style: TextStyle(color: Colors.white)), // Set text color to white
-        backgroundColor: Colors.red, // Set background color to red
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'Welcome to the Help Section',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 20),
+          Text(
+            'Find your way around the app with the following instructions:',
+            style: TextStyle(fontSize: 18),
+          ),
+          SizedBox(height: 20),
+          _buildHelpItem(
+            context,
+            icon: Icons.shuffle,
+            title: 'Random Cocktail',
+            description:
+                'Explore random cocktails by tapping the "Random" tab at the bottom of the screen.',
+          ),
+          _buildHelpItem(
+            context,
+            icon: Icons.details,
+            title: 'Cocktail Details',
+            description:
+                'View details of a cocktail by selecting a drink from the "Random" or "Explore" sections.',
+          ),
+          _buildHelpItem(
+            context,
+            icon: Icons.explore,
+            title: 'Explore Ingredients',
+            description:
+                'Discover cocktails by selecting specific ingredients under the "Explore" tab.',
+          ),
+        ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Welcome to the Help Page',
-              style: TextStyle(fontSize: 24),
+    );
+  }
+
+  Widget _buildHelpItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Icon(icon, size: 30, color:Colors.red),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                SizedBox(height: 4),
+                Text(description, style: TextStyle(fontSize: 16)),
+              ],
             ),
-            SizedBox(height: 20),
-            Text(
-              'Instructions:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Text(
-              '1. To explore random cocktails, tap the "Random" tab at the bottom of the screen.',
-              style: TextStyle(fontSize: 16),
-            ),
-            Text(
-              '2. To view details of a cocktail, tap the "Details" tab after fetching a random cocktail.',
-              style: TextStyle(fontSize: 16),
-            ),
-            Text(
-              '3. To explore cocktails by adding specific ingredients, tap the "Explore" tab.',
-              style: TextStyle(fontSize: 16),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

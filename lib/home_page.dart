@@ -1,32 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'details_page.dart'; // Imports the details page
-import 'explorer_page.dart'; // Imports the CocktailExplorer page
+import 'details_page.dart';
+import 'explorer_page.dart';
+import 'help_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _currentIndex = 0; // Current index for the BottomNavigationBar
-  Map<String, dynamic>? cocktail; // Declares a variable to hold the cocktail data
-  bool showDetailsIndicator = false; // Declares a variable to control the visibility of the indicator
+class HomePageState extends State<HomePage> {
+  int _currentIndex = 3; // App starts on the help page.
+  Map<String, dynamic>? cocktail; // Holds the data for the current cocktail.
+  bool showDetailsIndicator = false; // Controls the visibility of the details indicator.
 
-  // Function to fetch random cocktail data
+  // fetchCocktail fetches a random cocktail from an API.
   Future<void> fetchCocktail() async {
     try {
       final response = await http.get(Uri.parse('https://www.thecocktaildb.com/api/json/v1/1/random.php'));
       final Map<String, dynamic> newCocktail = json.decode(response.body)['drinks'][0];
       setState(() {
         cocktail = newCocktail;
-        // Always set showDetailsIndicator to true to keep the badge visible
         showDetailsIndicator = true;
-        // Update the "Details" tab label with a red badge
         navBarItems[1] = BottomNavigationBarItem(
           icon: Icon(Icons.details),
-          label: 'Details${showDetailsIndicator ? '  ●' : ''}',
+          label: 'Details${showDetailsIndicator ? ' ●' : ''}',
         );
       });
     } catch (e) {
@@ -34,29 +33,31 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Function to handle navigation bar tap
+  // onTabTapped handles the action when a tab is tapped.
   void onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-      if (_currentIndex == 1 && cocktail != null) { // Make sure there is a cocktail data to show
-        // Reset the indicator when navigating to details
+    if (index == 1 && cocktail != null) {
+      setState(() {
         showDetailsIndicator = false;
-        // Update the "Details" tab label without the badge
         navBarItems[1] = BottomNavigationBarItem(
           icon: Icon(Icons.details),
           label: 'Details',
         );
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DetailsPage(cocktail: cocktail!)),
-        );
-      }
-      if (_currentIndex == 0) {
-        fetchCocktail();
-      }
-    });
+      });
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => DetailsPage(cocktail: cocktail!)),
+      );
+    } else {
+      setState(() {
+        _currentIndex = index;
+        if (index == 0) {
+          fetchCocktail();
+        }
+      });
+    }
   }
 
+  // navBarItems holds the items for the bottom navigation bar.
   List<BottomNavigationBarItem> navBarItems = [
     BottomNavigationBarItem(
       icon: Icon(Icons.shuffle),
@@ -71,55 +72,38 @@ class _HomePageState extends State<HomePage> {
       label: 'Explore',
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.help),
+      icon: Icon(Icons.help_outline),
       label: 'Help',
     ),
   ];
 
+  // build returns the widget for HomePage.
   @override
   Widget build(BuildContext context) {
+    List<Widget> pageWidgets = [
+      Center(child: Text('View your cocktail by pressing the "Details" Button!')),
+      if (cocktail != null) DetailsPage(cocktail: cocktail!) else Container(),
+      CocktailExplorer(), 
+      HelpPage(), 
+    ];
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.red, // Set the background color of the AppBar to warm red
-        title: Row(
-          children: [
-            Text(
-              'Cocktail Explorer',
-              style: TextStyle(
-                color: Colors.white, // Set the text color to white
-              ),
-            ),
-            SizedBox(width: 5),
-            // Display the badge if showDetailsIndicator is true
-            if (showDetailsIndicator)
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  'New Cocktail!', 
-                  style: TextStyle(
-                    color: Colors.white, // Set badge text color to white
-                    fontSize: 12, // Adjust badge font size
-                  ),
-                ),
-              ),
-          ],
-        ),
+        backgroundColor: Colors.red,
+        title: Text('Cocktail Explorer'),
       ),
-      body: _currentIndex == 2
-          ? CocktailExplorer()
-          : Center(child: Text('Tap on a navigation item')), // Placeholder for other indices
+      body: IndexedStack(
+        index: _currentIndex,
+        children: pageWidgets,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: onTabTapped,
         currentIndex: _currentIndex,
         items: navBarItems,
-        selectedItemColor: Colors.red, // Change selected item color to dark red
-        unselectedItemColor: Colors.grey, // Unselected items are grey
-        backgroundColor: Colors.white, // Background is white
-        type: BottomNavigationBarType.fixed, // Fix the navigation bar items to equally spaced
+        selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }

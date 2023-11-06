@@ -1,32 +1,33 @@
 import 'package:flutter/material.dart';
 
 class DetailsPage extends StatelessWidget {
-  // Holds the cocktail data, which can now be null
   final Map<String, dynamic>? cocktail;
 
-  // Constructor for DetailsPage, now accepts nullable cocktail data
   DetailsPage({this.cocktail, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Function to build a text section if the key exists and is not empty
     Widget buildTextSection(String title, String? value) {
+      if (value == null || value.isEmpty) return SizedBox.shrink();
       return Padding(
-        padding: const EdgeInsets.only(bottom: 8.0), // Space between sections
-        child: value != null && value.isNotEmpty
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.headline6),
-                  SizedBox(height: 4), // Small gap between title and content
-                  Text(value, style: Theme.of(context).textTheme.bodyText2),
-                ],
-              )
-            : SizedBox.shrink(),
+        padding: const EdgeInsets.only(bottom: 12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
+            ),
+            SizedBox(height: 6),
+            Text(
+              value,
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
       );
     }
 
-    // Generate ingredient list
     Widget buildIngredientList() {
       List<Widget> ingredientsWidgets = [];
       if (cocktail != null) {
@@ -35,7 +36,10 @@ class DetailsPage extends StatelessWidget {
           var measure = cocktail!['strMeasure$i'];
           if (ingredient != null && ingredient.isNotEmpty) {
             ingredientsWidgets.add(
-              Text('$ingredient: ${measure ?? 'Not specified'}'),
+              Text(
+                '• $ingredient${measure != null ? ' - $measure' : ''}',
+                style: TextStyle(fontSize: 16),
+              ),
             );
           }
         }
@@ -45,54 +49,43 @@ class DetailsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.red, // Set the background color of the AppBar to red
+        backgroundColor: Colors.red,
         title: Text(
           cocktail?['strDrink'] ?? 'Cocktail Details',
-          style: TextStyle(
-            color: Colors.white, // Set the text color to white
-          ),
+          style: TextStyle(color: Colors.white),
         ),
       ),
-      body: cocktail == null
-          ? Center(child: Text('No data available'))
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: cocktail == null
+            ? Center(child: Text('No data available'))
+            : SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     if (cocktail!['strDrinkThumb'] != null)
-                      Center(
-                        child: Image.network(
-                          cocktail!['strDrinkThumb'],
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.broken_image); // Placeholder image on error
-                          },
-                        ),
+                      Image.network(
+                        cocktail!['strDrinkThumb'],
+                        height: 250,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
                       ),
-                    SizedBox(height: 24), // Added space between image and ingredients
-
-                    // Ingredient list
-                    Text('Ingredients:', style: Theme.of(context).textTheme.headline6),
+                    SizedBox(height: 24),
+                    Text(
+                      'Ingredients:',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red),
+                    ),
+                    SizedBox(height: 10),
                     buildIngredientList(),
-
-                    SizedBox(height: 24), // Space between sections
-
-                    // Instructions section
+                    SizedBox(height: 24),
                     buildTextSection('Instructions', cocktail!['strInstructions']),
-
-                    // Category section
                     buildTextSection('Category', cocktail!['strCategory']),
-
-                    // Alcoholic content section
                     buildTextSection('Alcoholic', cocktail!['strAlcoholic']),
-
-                    // Glass type section
                     buildTextSection('Glass', cocktail!['strGlass']),
                   ],
                 ),
               ),
-            ),
+      ),
     );
   }
 }
